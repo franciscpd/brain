@@ -117,3 +117,43 @@ def test_scope_language_requires_value() -> None:
             device_id="dev1",
             language="python",
         )
+
+
+from brain_mcp.db.schema import KnowledgeItemPatch
+
+
+def test_patch_accepts_partial_content_update() -> None:
+    patch = KnowledgeItemPatch(content="new content")
+    dumped = patch.model_dump(exclude_unset=True)
+    assert dumped == {"content": "new content"}
+
+
+def test_patch_rejects_immutable_id() -> None:
+    with pytest.raises(PydanticValidationError):
+        KnowledgeItemPatch(id="xyz")
+
+
+def test_patch_rejects_immutable_kind() -> None:
+    with pytest.raises(PydanticValidationError):
+        KnowledgeItemPatch(kind=KnowledgeKind.RULE)
+
+
+def test_patch_rejects_immutable_created_at() -> None:
+    from datetime import UTC, datetime
+    with pytest.raises(PydanticValidationError):
+        KnowledgeItemPatch(created_at=datetime.now(tz=UTC))
+
+
+def test_patch_normalizes_tags_like_base() -> None:
+    patch = KnowledgeItemPatch(tags=["Python_Async", "effects"])
+    assert patch.tags == ["effects", "python-async"]
+
+
+def test_patch_normalizes_language() -> None:
+    patch = KnowledgeItemPatch(language="Python")
+    assert patch.language == "python"
+
+
+def test_patch_normalizes_topic() -> None:
+    patch = KnowledgeItemPatch(topic="Code Style")
+    assert patch.topic == "code-style"

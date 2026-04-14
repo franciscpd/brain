@@ -118,3 +118,51 @@ class BugLesson(KnowledgeItemBase):
 
 
 KnowledgeItem = Rule | Snippet | Decision | BugLesson
+
+
+class KnowledgeItemPatch(BaseModel):
+    """Partial update payload for a KnowledgeItem.
+
+    Immutable fields (id, kind, created_at) are not present on this model —
+    passing them raises PydanticValidationError via ``extra='forbid'``.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    title: str | None = None
+    content: str | None = None
+    scope: Scope | None = None
+    tags: list[str] | None = None
+
+    # kind-specific (all optional)
+    priority: int | None = Field(default=None, ge=0, le=100)
+    topic: str | None = None
+    language: str | None = None
+    usage_context: str | None = None
+    context: str | None = None
+    rationale: str | None = None
+    alternatives: str | None = None
+    symptom: str | None = None
+    root_cause: str | None = None
+    fix: str | None = None
+    prevention: str | None = None
+
+    @field_validator("tags", mode="before")
+    @classmethod
+    def _normalize_tags(cls, value: list[str] | None) -> list[str] | None:
+        if value is None:
+            return None
+        normalized = {normalize_tag(t) for t in value if t and normalize_tag(t)}
+        return sorted(normalized)
+
+    @field_validator("language", mode="before")
+    @classmethod
+    def _normalize_language(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        return normalize_language(value)
+
+    @field_validator("topic", mode="before")
+    @classmethod
+    def _normalize_topic(cls, value: str | None) -> str | None:
+        return normalize_topic(value)
