@@ -145,17 +145,78 @@ Exclusões explícitas. Documentadas para prevenir scope creep.
 
 ## Traceability
 
-Será populado pelo gsd-roadmapper após criação do ROADMAP.md.
-
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| _(pending roadmap)_ | — | Pending |
+| STOR-01 | Phase 1 | Pending |
+| STOR-02 | Phase 1 | Pending |
+| STOR-03 | Phase 1 | Pending |
+| STOR-04 | Phase 1 | Pending |
+| STOR-05 | Phase 1 | Pending |
+| STOR-06 | Phase 1 | Pending |
+| STOR-07 | Phase 1 | Pending |
+| EMB-01 | Phase 1 | Pending |
+| EMB-02 | Phase 1 | Pending |
+| EMB-03 | Phase 1 | Pending |
+| EMB-04 | Phase 1 | Pending |
+| EMB-05 | Phase 1 | Pending |
+| EMB-06 | Phase 1 | Pending |
+| KNOW-01 | Phase 2 | Pending |
+| KNOW-02 | Phase 2 | Pending |
+| KNOW-03 | Phase 2 | Pending |
+| KNOW-04 | Phase 2 | Pending |
+| KNOW-05 | Phase 2 | Pending |
+| KNOW-06 | Phase 2 | Pending |
+| SCOPE-01 | Phase 2 | Pending |
+| SCOPE-02 | Phase 2 | Pending |
+| SCOPE-03 | Phase 2 | Pending |
+| SCOPE-04 | Phase 2 | Pending |
+| MCP-01 | Phase 2 | Pending |
+| MCP-02 | Phase 2 | Pending |
+| MCP-03 | Phase 2 | Pending |
+| MCP-04 | Phase 2 | Pending |
+| MCP-05 | Phase 2 | Pending |
+| MCP-06 | Phase 2 | Pending |
+| RET-01 | Phase 3 | Pending |
+| RET-02 | Phase 3 | Pending |
+| RET-03 | Phase 3 | Pending |
+| RET-04 | Phase 3 | Pending |
+| RET-05 | Phase 3 | Pending |
+| RET-06 | Phase 3 | Pending |
+| SESS-01 | Phase 3 | Pending |
+| SESS-02 | Phase 3 | Pending |
+| SESS-03 | Phase 3 | Pending |
+| SESS-04 | Phase 3 | Pending |
+| CAPT-01 | Phase 4 | Pending |
+| CAPT-02 | Phase 4 | Pending |
+| CAPT-03 | Phase 4 | Pending |
+| AUTO-01 | Phase 4 | Pending |
+| AUTO-02 | Phase 4 | Pending |
+| AUTO-03 | Phase 4 | Pending |
+| AUTO-04 | Phase 4 | Pending |
+| LIFE-01 | Phase 5 | Pending |
+| LIFE-02 | Phase 5 | Pending |
+| LIFE-03 | Phase 5 | Pending |
+| LIFE-04 | Phase 5 | Pending |
+| PKG-01 | Phase 5 | Pending |
+| PKG-02 | Phase 5 | Pending |
+| PKG-03 | Phase 5 | Pending |
+| PKG-04 | Phase 5 | Pending |
 
 **Coverage:**
-- v1 requirements: 48 total
-- Mapped to phases: 0 (pending roadmap)
-- Unmapped: 48 ⚠️
+- v1 requirements: 54 total
+- Mapped to phases: 54/54 ✓
+- Unmapped: 0
+
+| Phase | Requirements | Count |
+|-------|-------------|-------|
+| Phase 1 — Storage + Embedding Foundation | STOR-01..07, EMB-01..06 | 13 |
+| Phase 2 — Knowledge CRUD + Scoping + MCP Core | KNOW-01..06, SCOPE-01..04, MCP-01..06 | 16 |
+| Phase 3 — Retrieval + Session Injection | RET-01..06, SESS-01..04 | 10 |
+| Phase 4 — Capture (Manual + Auto) | CAPT-01..03, AUTO-01..04 | 7 |
+| Phase 5 — Lifecycle, Packaging + Polish | LIFE-01..04, PKG-01..04 | 8 |
+
+**Note:** Header declared 48 requirements; actual count is 54 (verified by checkbox count 2026-04-14).
 
 ---
 *Requirements defined: 2026-04-14*
-*Last updated: 2026-04-14 after initial definition*
+*Last updated: 2026-04-14 after roadmap creation (traceability populated)*
