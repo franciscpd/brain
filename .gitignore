@@ -9,6 +9,9 @@ __pycache__/
 dist/
 build/
 
+# IDE
+.idea/
+
 # Project
 *.db
 *.db-wal
