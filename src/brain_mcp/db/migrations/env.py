@@ -8,7 +8,6 @@ it in a SQLAlchemy engine via the `creator` pattern.
 from __future__ import annotations
 
 import sqlite3
-from typing import cast
 
 from alembic import context
 from sqlalchemy import create_engine
@@ -31,7 +30,7 @@ def _make_engine() -> Engine:
             conn_holder["conn"] = connect(db)
         return conn_holder["conn"]
 
-    return cast(Engine, create_engine("sqlite://", creator=creator))
+    return create_engine("sqlite://", creator=creator)
 
 
 def run_migrations_offline() -> None:
