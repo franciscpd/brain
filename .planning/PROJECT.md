@@ -2,13 +2,13 @@
 
 ## What This Is
 
-`brain` é um servidor MCP local-first que funciona como um "cérebro" compartilhado para Claude e outras IAs — armazenando e recuperando padrões de código (regras pessoais, snippets, decisões, lições de bugs) via RAG, de modo que o conhecimento acumulado em um projeto seja automaticamente reutilizável em todos os outros.
+`brain` is a local-first MCP server that acts as a shared "brain" for Claude and other AIs — storing and retrieving code patterns (personal rules, snippets, architectural decisions, bug lessons) via RAG, so that knowledge accumulated in one project is automatically reusable in every other project.
 
-É uma ferramenta pessoal de desenvolvedor: um só usuário, múltiplas IAs clientes, conhecimento que atravessa projetos.
+It is a personal developer tool: a single user, multiple AI clients, and knowledge that travels across projects.
 
 ## Core Value
 
-**Nunca mais precisar repetir manualmente as mesmas regras, preferências e padrões de código para a IA em cada novo projeto.** Se o brain fizer isso bem, tudo o mais é bônus.
+**Never again having to manually repeat the same rules, preferences, and coding patterns to the AI in every new project.** If brain gets this right, everything else is a bonus.
 
 ## Requirements
 
@@ -22,72 +22,72 @@
 
 <!-- Current scope. Building toward these. -->
 
-- [ ] Servidor MCP funcional expondo tools de captura e recuperação de conhecimento
-- [ ] Armazenamento local-first (SQLite + vector store embutido) pronto para sync futuro
-- [ ] Embeddings locais embutidos (sem dependência de Ollama/API externa) — funciona em qualquer máquina após instalação
-- [ ] Captura e recuperação de **regras pessoais** (prioridade #1 — ataca a dor principal)
-- [ ] Captura e recuperação de **snippets/soluções reutilizáveis**
-- [ ] Captura e recuperação de **decisões arquiteturais**
-- [ ] Captura e recuperação de **lições de bugs/erros**
-- [ ] Captura híbrida: automática (via hooks do Claude Code) + manual (via comandos/tools explícitos)
-- [ ] Recuperação híbrida: contexto relevante injetado no início da sessão + busca sob demanda via tool call
-- [ ] Funciona como cliente MCP em Claude Code (CLI), Claude Desktop, Cursor/Windsurf e SDK direto
-- [ ] Escopo do conhecimento isolável por projeto/global (regras globais vs contextuais)
-- [ ] Experiência de captura sem atrito — salvar algo leva segundos
+- [ ] Functional MCP server exposing tools for knowledge capture and retrieval
+- [ ] Local-first storage (SQLite + embedded vector store), prepared for future sync
+- [ ] Locally-embedded embeddings (no dependency on Ollama or external APIs) — runs on any machine after install
+- [ ] Capture and retrieval of **personal rules** (priority #1 — attacks the main pain point)
+- [ ] Capture and retrieval of **reusable snippets/solutions**
+- [ ] Capture and retrieval of **architectural decisions**
+- [ ] Capture and retrieval of **bug/error lessons**
+- [ ] Hybrid capture: automatic (via Claude Code hooks) + manual (via explicit commands/tools)
+- [ ] Hybrid retrieval: relevant context injected at session start + on-demand search via tool call
+- [ ] Works as an MCP client in Claude Code (CLI), Claude Desktop, Cursor/Windsurf, and direct SDK
+- [ ] Knowledge scope isolable per project/global (global rules vs contextual rules)
+- [ ] Friction-free capture experience — saving something takes seconds
 
 ### Out of Scope
 
 <!-- Explicit boundaries. Includes reasoning to prevent re-adding. -->
 
-- **Documentação de projeto (README, docs de API)** — isso mora no repositório, brain não substitui docs formais
-- **Sistema de tickets/tasks (Linear/Jira)** — brain não gerencia trabalho pendente, só conhecimento consolidado
-- **Memória de conversação/resumos de sessão** — brain não guarda histórico de chats; existe para padrões acionáveis, não para recordação contextual
-- **Base de conhecimento genérica (Notion/Obsidian)** — foco estrito em código e desenvolvimento; não é lugar para anotações de vida/pesquisa/reuniões
-- **Sync em nuvem no v1** — schema preparado para sync, mas a implementação fica para depois de validar uso pessoal
-- **Multi-usuário / compartilhamento de time** — escopo v1 é estritamente pessoal
-- **Integração com GSD (get-shit-done)** — brain é cross-tool e independente; GSD é workflow de um projeto. Manter separados.
-- **Cloud embeddings (OpenAI/Voyage) no v1** — custo e qualidade não justificam dependência externa para uso pessoal; pode virar opção futura
-- **Interface web/GUI** — v1 é MCP + CLI. Qualquer UI é posterior.
+- **Project documentation (README, API docs)** — that lives in the repository; brain does not replace formal docs
+- **Ticket/task system (Linear/Jira)** — brain does not manage pending work, only consolidated knowledge
+- **Conversation memory / session summaries** — brain does not keep chat history; it exists for actionable patterns, not contextual recall
+- **Generic knowledge base (Notion/Obsidian)** — strictly focused on code and development; not a place for life notes, research, or meetings
+- **Cloud sync in v1** — schema is prepared for sync, but the implementation is deferred until personal use is validated
+- **Multi-user / team sharing** — v1 scope is strictly personal
+- **Integration with GSD (get-shit-done)** — brain is cross-tool and independent; GSD is a per-project workflow. Keep them separate.
+- **Cloud embeddings (OpenAI/Voyage) in v1** — cost and quality do not justify an external dependency for personal use; may become a future option
+- **Web interface / GUI** — v1 is MCP + CLI. Any UI is post-v1.
 
 ## Context
 
-**Motivação:** O usuário percebe que repete as mesmas instruções para a IA em cada novo projeto ("use TypeScript strict", "não use `any`", convenções de commit, estrutura de diretórios, etc). Cada projeto novo começa do zero em termos de contexto de preferências. Quando acontece um bug que já foi resolvido antes em outro projeto, a IA não tem como lembrar. Quando uma solução elegante aparece, ela fica presa no projeto onde nasceu.
+**Motivation:** The user notices they repeat the same instructions to the AI in every new project ("use TypeScript strict", "no `any`", commit conventions, directory structure, etc). Every new project starts from zero in terms of preference context. When a bug occurs that was already solved elsewhere, the AI has no way to remember. When an elegant solution appears, it is trapped inside the project where it was born.
 
-**Ecossistema técnico:**
-- MCP (Model Context Protocol) já é suportado nativamente por Claude Code, Claude Desktop, Cursor, Windsurf e outros IDEs — um servidor MCP serve todos esses clientes com o mesmo código
-- RAG com embeddings locais amadureceu em 2024-2025: modelos como `nomic-embed-text` rodam em CPU com qualidade excelente
-- Bibliotecas como `fastembed` permitem rodar embeddings sem servidor Ollama separado (modelo carregado no próprio processo)
-- SDK MCP oficial para Python é maduro e bem documentado
+**Technical ecosystem:**
+- MCP (Model Context Protocol) is already natively supported by Claude Code, Claude Desktop, Cursor, Windsurf, and other IDEs — one MCP server serves all these clients with the same code
+- Local-embedding RAG matured in 2024–2025: models like `nomic-embed-text` run on CPU with excellent quality
+- Libraries like `fastembed` allow running embeddings without a separate Ollama server (model loaded inside the process)
+- The official MCP Python SDK is mature and well-documented
 
-**Experiência prévia relevante:**
-- Usuário já usa Claude Code intensivamente em múltiplos projetos
-- Já sente na prática a dor de repetir CLAUDE.md similares
-- Quer ferramenta de uso diário, não experimento acadêmico
+**Relevant prior experience:**
+- User already uses Claude Code heavily across multiple projects
+- Already feels the pain of maintaining similar CLAUDE.md files
+- Wants a daily-use tool, not an academic experiment
 
 ## Constraints
 
-- **Tech stack**: Python — SDK MCP oficial maduro, ecossistema ML/embeddings completo (fastembed, sentence-transformers), instalação simples via pip/uv
-- **Embeddings**: Locais embutidos, sem dependência de Ollama ou API externa — requisito: "funciona em qualquer máquina"
-- **Armazenamento**: Local-first (SQLite + vector index embutido); schema deve ser versionado e preparado para sync futuro
-- **Privacidade**: Nenhum dado sai da máquina do usuário no v1 — requisito de confiança e de zero custo operacional
-- **Escopo v1**: Estritamente pessoal (um usuário) — centenas a poucos milhares de entradas; otimização para multi-usuário fica para depois
-- **Compatibilidade MCP**: Deve seguir protocolo MCP padrão para funcionar em Claude Code, Desktop, Cursor, Windsurf e SDK sem código específico por cliente
-- **Setup**: Instalação e configuração devem ser simples o bastante para uso diário — idealmente `pip install` + comando de registro MCP
+- **Tech stack**: Python — mature official MCP SDK, complete ML/embeddings ecosystem (fastembed, sentence-transformers), simple install via pip/uv
+- **Embeddings**: Locally embedded, no Ollama or external API dependency — requirement: "runs on any machine"
+- **Storage**: Local-first (SQLite + embedded vector index); schema must be versioned and prepared for future sync
+- **Privacy**: No user data leaves the machine in v1 — trust and zero-operational-cost requirement
+- **v1 scope**: Strictly personal (single user) — hundreds to low thousands of entries; multi-user optimization is deferred
+- **MCP compatibility**: Must follow standard MCP protocol so it works in Claude Code, Desktop, Cursor, Windsurf, and direct SDK with no client-specific code
+- **Setup**: Install and configuration must be simple enough for daily use — ideally `pip install` + one MCP registration command
 
 ## Key Decisions
 
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
-| Local-first com SQLite + embeddings embutidos | Privacidade, zero custo, funciona offline, combina com escopo pessoal; sync pode ser adicionado sem mudar modelo de dados | — Pending |
-| Python como linguagem de implementação | SDK MCP oficial maduro + ecossistema ML/embeddings mais completo + instalação trivial via pip/uv | — Pending |
-| Embeddings locais embutidos via fastembed/Candle (não Ollama) | Zero dependência externa — usuário instala e roda, sem precisar ter Ollama rodando | — Pending |
-| nomic-embed-text como modelo default | Sweet spot comunidade RAG 2025: ~270MB, qualidade excelente para código+texto, roda em CPU | — Pending |
-| 4 tipos de conhecimento distintos (regras, snippets, decisões, bugs) | Cada tipo tem padrão de uso diferente; modelar explicitamente evita "bag genérica de textos" | — Pending |
-| Regras estruturadas + RAG vetorial em camadas | Regras são poucas e curadas — recuperação exata/tags basta; RAG agrega valor para os outros 3 tipos | — Pending |
-| Captura híbrida (automática via hooks + manual via comandos) | Captura automática pega o que passa despercebido; manual garante curadoria intencional | — Pending |
-| Recuperação híbrida (contexto inicial + tool call sob demanda) | Contexto inicial elimina fricção para regras globais; tool call deixa IA buscar quando realmente precisa | — Pending |
-| Brain independente do GSD | Brain é cross-tool, GSD é workflow de projeto — misturar escopos prejudicaria ambos | — Pending |
-| v1 pessoal; sync/multi-user é pós-v1 | Validar valor de uso pessoal antes de pagar complexidade de sync | — Pending |
+| Local-first with SQLite + embedded embeddings | Privacy, zero cost, works offline, matches personal scope; sync can be added without changing the data model | — Pending |
+| Python as implementation language | Mature official MCP SDK + most complete ML/embeddings ecosystem + trivial install via pip/uv | — Pending |
+| Embedded local embeddings via fastembed/Candle (not Ollama) | Zero external dependency — user installs and runs, no separate Ollama process required | — Pending |
+| nomic-embed-text as default model | Sweet spot in the 2025 RAG community: ~270MB, excellent quality for code+text, runs on CPU | — Pending |
+| 4 distinct knowledge types (rules, snippets, decisions, bugs) | Each type has a different usage pattern; modeling them explicitly avoids a "generic bag of text" | — Pending |
+| Structured rules + vector RAG in layers | Rules are few and curated — exact/tag lookup is enough; RAG adds value for the other 3 types | — Pending |
+| Hybrid capture (automatic via hooks + manual via commands) | Automatic capture catches what goes unnoticed; manual ensures intentional curation | — Pending |
+| Hybrid retrieval (session-start context + on-demand tool call) | Initial context eliminates friction for global rules; tool call lets the AI search when it actually needs to | — Pending |
+| Brain independent of GSD | Brain is cross-tool, GSD is a per-project workflow — mixing scopes would hurt both | — Pending |
+| v1 is personal; sync / multi-user is post-v1 | Validate the value of personal use before paying the complexity cost of sync | — Pending |
 
 ## Evolution
 

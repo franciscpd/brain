@@ -1,147 +1,147 @@
 # Requirements: brain
 
 **Defined:** 2026-04-14
-**Core Value:** Nunca mais precisar repetir manualmente as mesmas regras, preferências e padrões de código para a IA em cada novo projeto.
+**Core Value:** Never again having to manually repeat the same rules, preferences, and coding patterns to the AI in every new project.
 
 ## v1 Requirements
 
-Requirements para o release inicial. Cada um mapeia para uma fase do roadmap.
+Requirements for the initial release. Each maps to a phase in the roadmap.
 
 ### Storage & Schema (STOR)
 
-- [ ] **STOR-01**: Banco SQLite local criado em path configurável (default `~/.brain/brain.db`), em WAL mode com `busy_timeout` definido
-- [ ] **STOR-02**: Schema `knowledge_items` com campos compartilhados (id UUID, kind, scope_type, scope_value, tags, content, created_at, updated_at, embedding_model_id, sync_id, synced_at, device_id)
-- [ ] **STOR-03**: Tabelas de extensão específicas para cada tipo (`rules`, `snippets`, `decisions`, `bugs`) ligadas 1:1 ao `knowledge_items`
-- [ ] **STOR-04**: Virtual table `sqlite-vec` (`knowledge_vec`) + bridge table (`vec_rowid_map`) para busca KNN por cosine distance
-- [ ] **STOR-05**: Índice FTS5 sobre `content` + campos relevantes para busca textual exata e BM25
-- [ ] **STOR-06**: Migrações gerenciadas via Alembic desde a migração inicial (batch mode para compatibilidade com SQLite)
-- [ ] **STOR-07**: Schema preparado para sync futuro (PKs como UUIDs, timestamps ISO 8601 UTC, device_id, sync_id) — sem implementar sync
+- [ ] **STOR-01**: Local SQLite database created at a configurable path (default `~/.brain/brain.db`), in WAL mode with `busy_timeout` set
+- [ ] **STOR-02**: `knowledge_items` schema with shared fields (id UUID, kind, scope_type, scope_value, tags, content, created_at, updated_at, embedding_model_id, sync_id, synced_at, device_id)
+- [ ] **STOR-03**: Type-specific extension tables (`rules`, `snippets`, `decisions`, `bugs`) linked 1:1 to `knowledge_items`
+- [ ] **STOR-04**: `sqlite-vec` virtual table (`knowledge_vec`) + bridge table (`vec_rowid_map`) for KNN search via cosine distance
+- [ ] **STOR-05**: FTS5 index over `content` and relevant fields for exact text search and BM25 ranking
+- [ ] **STOR-06**: Migrations managed via Alembic from the initial migration (batch mode for SQLite compatibility)
+- [ ] **STOR-07**: Schema prepared for future sync (UUID PKs, ISO 8601 UTC timestamps, device_id, sync_id) — without implementing sync
 
 ### Embedding Service (EMB)
 
-- [ ] **EMB-01**: Embedding service embutido usando `fastembed` com modelo `nomic-ai/nomic-embed-text-v1.5` — sem dependência de Ollama ou API externa
-- [ ] **EMB-02**: Modelo carregado lazy (primeira chamada), cache em `~/.brain/models/` via `FASTEMBED_CACHE_PATH`
-- [ ] **EMB-03**: Chunker AST-aware para snippets de código (respeita fronteiras de função/classe), fallback para chunker por token count para texto livre
-- [ ] **EMB-04**: Task prefixes aplicados corretamente (`search_document: ` no write, `search_query: ` no read) conforme exigência do nomic-embed
-- [ ] **EMB-05**: Todo vetor gravado com `embedding_model_id` associado — upgrade de modelo no futuro reindexará apenas entradas afetadas
-- [ ] **EMB-06**: Primeira execução comunica ao usuário o download do modelo (~270MB) de forma clara
+- [ ] **EMB-01**: Embedded embedding service using `fastembed` with model `nomic-ai/nomic-embed-text-v1.5` — no dependency on Ollama or external APIs
+- [ ] **EMB-02**: Model loaded lazily (on first call), cached at `~/.brain/models/` via `FASTEMBED_CACHE_PATH`
+- [ ] **EMB-03**: AST-aware chunker for code snippets (respects function/class boundaries), with token-count chunker fallback for free text
+- [ ] **EMB-04**: Task prefixes applied correctly (`search_document: ` on write, `search_query: ` on read) as required by nomic-embed
+- [ ] **EMB-05**: Every vector stored with its associated `embedding_model_id` — a future model upgrade only reindexes affected entries
+- [ ] **EMB-06**: First run communicates the model download (~270MB) to the user clearly
 
 ### Knowledge CRUD (KNOW)
 
-- [ ] **KNOW-01**: Criar, ler, atualizar e deletar **regras pessoais** (type: `rule`) com campos: título, conteúdo, tags, escopo, prioridade
-- [ ] **KNOW-02**: Criar, ler, atualizar e deletar **snippets/soluções reutilizáveis** (type: `snippet`) com campos: título, código, linguagem, contexto de uso, tags, escopo
-- [ ] **KNOW-03**: Criar, ler, atualizar e deletar **decisões arquiteturais** (type: `decision`) com campos: título, contexto, decisão, rationale, alternativas consideradas, escopo
-- [ ] **KNOW-04**: Criar, ler, atualizar e deletar **lições de bugs/erros** (type: `bug_lesson`) com campos: título, sintoma, causa raiz, correção, prevenção, tags, escopo
-- [ ] **KNOW-05**: Listar entries por tipo, filtrados por escopo (global/project/language) e tags
-- [ ] **KNOW-06**: Todo write passa por scanner de secrets (`detect-secrets` ou equivalente) — write é bloqueado se credenciais forem detectadas
+- [ ] **KNOW-01**: Create, read, update, and delete **personal rules** (type: `rule`) with fields: title, content, tags, scope, priority
+- [ ] **KNOW-02**: Create, read, update, and delete **reusable snippets/solutions** (type: `snippet`) with fields: title, code, language, usage context, tags, scope
+- [ ] **KNOW-03**: Create, read, update, and delete **architectural decisions** (type: `decision`) with fields: title, context, decision, rationale, considered alternatives, scope
+- [ ] **KNOW-04**: Create, read, update, and delete **bug/error lessons** (type: `bug_lesson`) with fields: title, symptom, root cause, fix, prevention, tags, scope
+- [ ] **KNOW-05**: List entries by type, filtered by scope (global/project/language) and tags
+- [ ] **KNOW-06**: Every write passes through a secret scanner (`detect-secrets` or equivalent) — writes are blocked if credentials are detected
 
 ### Scoping (SCOPE)
 
-- [ ] **SCOPE-01**: Três tipos de escopo suportados: `global` (vale em qualquer contexto), `project` (vale apenas no projeto identificado), `language` (vale para linguagem específica)
-- [ ] **SCOPE-02**: Filtros de recuperação aplicam escopo como filtro duro (não só ranking) — regras de project A nunca vazam para project B
-- [ ] **SCOPE-03**: Regras `global` podem ser sobrescritas por regras `project` do mesmo tópico (override via tag/topic)
-- [ ] **SCOPE-04**: Identificação de projeto atual via MCP roots ou working directory como fallback documentado
+- [ ] **SCOPE-01**: Three scope types supported: `global` (applies in any context), `project` (applies only within the identified project), `language` (applies to a specific language)
+- [ ] **SCOPE-02**: Retrieval filters apply scope as a hard filter (not just ranking) — rules from project A never leak into project B
+- [ ] **SCOPE-03**: `global` rules can be overridden by `project` rules on the same topic (override via tag/topic)
+- [ ] **SCOPE-04**: Current-project identification via MCP roots, with working directory as a documented fallback
 
 ### MCP Server (MCP)
 
-- [ ] **MCP-01**: Servidor MCP stdio funcional usando SDK oficial (`mcp` com FastMCP), sem `print()` no stream JSON-RPC
-- [ ] **MCP-02**: Lifespan pattern para inicialização de DB e lazy-load do modelo de embeddings
-- [ ] **MCP-03**: MCP Tools expostos para captura (uma tool por tipo de conhecimento ou uma tool unificada com parâmetro `kind`)
-- [ ] **MCP-04**: MCP Tool `brain_search` para busca sob demanda pela IA — com descrição clara o suficiente para a IA saber quando chamar
-- [ ] **MCP-05**: MCP Resource ou Prompt expondo regras relevantes ao projeto atual, para injeção no início da sessão
-- [ ] **MCP-06**: Descrições de tools seguem boas práticas (critérios de decisão para LLM, não documentação humana) — meta de < 8 tools no total para minimizar overhead de schema
+- [ ] **MCP-01**: Working stdio MCP server using the official SDK (`mcp` with FastMCP), with no `print()` on the JSON-RPC stream
+- [ ] **MCP-02**: Lifespan pattern used for DB initialization and lazy-loading of the embedding model
+- [ ] **MCP-03**: MCP Tools exposed for capture (one tool per knowledge type, or a unified tool with a `kind` parameter)
+- [ ] **MCP-04**: `brain_search` MCP Tool for on-demand AI-driven search — with a description clear enough that the AI knows when to call it
+- [ ] **MCP-05**: MCP Resource or Prompt exposing relevant rules for the current project, for session-start injection
+- [ ] **MCP-06**: Tool descriptions follow best practices (decision criteria for an LLM, not human documentation) — target < 8 tools total to minimize schema overhead
 
 ### Retrieval (RET)
 
-- [ ] **RET-01**: Busca estruturada por tipo + tags + escopo + substring textual (rápida, exata)
-- [ ] **RET-02**: Busca semântica via `sqlite-vec` KNN para snippets/decisões/bugs
-- [ ] **RET-03**: Retrieval híbrido: FTS5 (BM25) + vector search com fusão de resultados (RRF ou weighted sum)
-- [ ] **RET-04**: Recency decay aplicado ao ranking (entradas recentes com leve boost; valores por tipo configuráveis)
-- [ ] **RET-05**: Regras são recuperadas principalmente por lookup estruturado (não dependem de RAG vetorial para o caminho principal)
-- [ ] **RET-06**: Limite configurável de resultados e tamanho máximo de payload — evita poisoning do context window do cliente
+- [ ] **RET-01**: Structured search by type + tags + scope + textual substring (fast, exact)
+- [ ] **RET-02**: Semantic search via `sqlite-vec` KNN for snippets/decisions/bugs
+- [ ] **RET-03**: Hybrid retrieval: FTS5 (BM25) + vector search with result fusion (RRF or weighted sum)
+- [ ] **RET-04**: Recency decay applied to ranking (recent entries get a mild boost; per-type values configurable)
+- [ ] **RET-05**: Rules are retrieved primarily via structured lookup (the main path does not depend on vector RAG)
+- [ ] **RET-06**: Configurable result cap and maximum payload size — prevents poisoning the client's context window
 
 ### Session Context Injection (SESS)
 
-- [ ] **SESS-01**: Endpoint/resource que retorna briefing contextual do projeto atual (regras globais + regras do projeto + decisões relevantes)
-- [ ] **SESS-02**: Injeção no início da sessão Claude Code via SessionStart hook ou MCP Resource (o que o cliente suportar — escolha documentada por cliente)
-- [ ] **SESS-03**: Briefing formatado em Markdown conciso, respeitando orçamento de tokens configurável
-- [ ] **SESS-04**: Validação manual em Claude Code CLI de que regras são carregadas e respeitadas pela IA
+- [ ] **SESS-01**: Endpoint/resource returning a contextual briefing for the current project (global rules + project rules + relevant decisions)
+- [ ] **SESS-02**: Injection at Claude Code session start via SessionStart hook or MCP Resource (whichever the client supports — choice documented per client)
+- [ ] **SESS-03**: Briefing formatted as concise Markdown, respecting a configurable token budget
+- [ ] **SESS-04**: Manual validation in the Claude Code CLI that rules are loaded and respected by the AI
 
 ### Capture — Manual (CAPT)
 
-- [ ] **CAPT-01**: Captura manual via MCP tools — a IA pode salvar uma regra/snippet/decisão/bug quando o usuário pede
-- [ ] **CAPT-02**: CLI command `brain save` para captura direta do usuário sem passar pela IA (`brain save rule "use ruff format"`)
-- [ ] **CAPT-03**: Workflow de captura leva <10 segundos entre intenção e confirmação ("zero atrito")
+- [ ] **CAPT-01**: Manual capture via MCP tools — the AI can save a rule/snippet/decision/bug when the user asks
+- [ ] **CAPT-02**: `brain save` CLI command for direct user capture without going through the AI (`brain save rule "use ruff format"`)
+- [ ] **CAPT-03**: The capture workflow takes <10 seconds between intent and confirmation ("zero friction")
 
-### Capture — Automática (AUTO)
+### Capture — Automatic (AUTO)
 
-- [ ] **AUTO-01**: Hook Stop do Claude Code extrai candidatos (regras declaradas, snippets úteis, decisões tomadas, bugs resolvidos) do transcript da sessão
-- [ ] **AUTO-02**: Candidatos passam por quality gate (secret scan + dedup semântico + relevância mínima) antes de serem salvos
-- [ ] **AUTO-03**: Auto-capture é opt-in por projeto — desabilitado por padrão até o usuário confiar na destilação
-- [ ] **AUTO-04**: Usuário pode revisar candidatos antes da persistência em modo "confirm before save"
+- [ ] **AUTO-01**: Claude Code Stop hook extracts candidates (declared rules, useful snippets, decisions made, bugs resolved) from the session transcript
+- [ ] **AUTO-02**: Candidates pass a quality gate (secret scan + semantic dedup + minimum relevance) before being saved
+- [ ] **AUTO-03**: Auto-capture is opt-in per project — disabled by default until the user trusts the distillation
+- [ ] **AUTO-04**: The user can review candidates before persistence in a "confirm before save" mode
 
 ### Lifecycle & Quality (LIFE)
 
-- [ ] **LIFE-01**: Detecção de contradição no write — se nova regra conflita com regra existente no mesmo escopo, alertar o usuário (não auto-resolver)
-- [ ] **LIFE-02**: CLI command `brain list/edit/delete` para curadoria manual
-- [ ] **LIFE-03**: CLI command `brain stats` mostra contagens por tipo, escopo, tamanho do índice
-- [ ] **LIFE-04**: CLI command `brain reindex` regera embeddings (útil ao trocar de modelo futuramente)
+- [ ] **LIFE-01**: Contradiction detection on write — if a new rule conflicts with an existing rule in the same scope, warn the user (do not auto-resolve)
+- [ ] **LIFE-02**: `brain list/edit/delete` CLI commands for manual curation
+- [ ] **LIFE-03**: `brain stats` CLI command shows counts by type, scope, and index size
+- [ ] **LIFE-04**: `brain reindex` CLI command regenerates embeddings (useful when switching models in the future)
 
 ### Packaging & Install (PKG)
 
-- [ ] **PKG-01**: Projeto empacotado com `pyproject.toml` + `uv`, entrypoint console_script (`brain-server`, `brain`)
-- [ ] **PKG-02**: Instalação via `uv tool install brain-server` ou `pip install brain-server`
-- [ ] **PKG-03**: Comando de registro MCP documentado para Claude Code, Claude Desktop, Cursor/Windsurf, e SDK direto
-- [ ] **PKG-04**: README com quickstart: instalar → registrar → salvar primeira regra → ver regra ser usada em nova sessão
+- [ ] **PKG-01**: Project packaged with `pyproject.toml` + `uv`, exposing console_script entry points (`brain-server`, `brain`)
+- [ ] **PKG-02**: Installation via `uv tool install brain-server` or `pip install brain-server`
+- [ ] **PKG-03**: MCP registration command documented for Claude Code, Claude Desktop, Cursor/Windsurf, and direct SDK
+- [ ] **PKG-04**: README quickstart: install → register → save first rule → see the rule used in a new session
 
 ## v2 Requirements
 
-Deferred para releases futuros. Reconhecidos mas fora do escopo atual.
+Deferred to future releases. Tracked but out of current scope.
 
 ### Sync & Multi-Device (SYNC)
 
-- **SYNC-01**: Sync entre múltiplas máquinas do mesmo usuário (schema já preparado)
-- **SYNC-02**: Resolução de conflitos em sync (last-write-wins vs merge)
-- **SYNC-03**: Modo cliente conectando a brain server remoto
+- **SYNC-01**: Sync across multiple machines belonging to the same user (schema already prepared)
+- **SYNC-02**: Conflict resolution on sync (last-write-wins vs merge)
+- **SYNC-03**: Client mode connecting to a remote brain server
 
 ### Collaboration (COLL)
 
-- **COLL-01**: Compartilhamento read-only de conhecimento entre devs de um time
-- **COLL-02**: Export/import de conjuntos de regras curados
+- **COLL-01**: Read-only knowledge sharing between devs on a team
+- **COLL-02**: Export/import of curated rule sets
 
 ### Advanced Capture (ADV)
 
-- **ADV-01**: Auto-capture usando PostToolUse hooks com heurísticas mais finas
-- **ADV-02**: Sugestões proativas ao usuário ("salvar esta regra?") baseadas em padrões repetidos
-- **ADV-03**: Mineração automática de repositórios existentes para extrair regras implícitas
+- **ADV-01**: Auto-capture using PostToolUse hooks with finer heuristics
+- **ADV-02**: Proactive suggestions to the user ("save this rule?") based on repeated patterns
+- **ADV-03**: Automated mining of existing repositories to extract implicit rules
 
 ### Cloud Embeddings (CLOUD)
 
-- **CLOUD-01**: Opção de usar OpenAI/Voyage embeddings para qualidade máxima (configurável, não default)
-- **CLOUD-02**: Modelo especializado em código (`nomic-embed-code`, `voyage-code-3`) como alternativa ao general-purpose
+- **CLOUD-01**: Option to use OpenAI/Voyage embeddings for maximum quality (configurable, not default)
+- **CLOUD-02**: Code-specialized model (`nomic-embed-code`, `voyage-code-3`) as an alternative to general-purpose
 
 ### UX (UX)
 
-- **UX-01**: Interface web/TUI para curadoria visual do conhecimento
-- **UX-02**: Diff visual ao detectar contradição entre regras
+- **UX-01**: Web/TUI interface for visual knowledge curation
+- **UX-02**: Visual diff when a contradiction is detected between rules
 
 ## Out of Scope
 
-Exclusões explícitas. Documentadas para prevenir scope creep.
+Explicit exclusions. Documented to prevent scope creep.
 
 | Feature | Reason |
 |---------|--------|
-| Documentação de projeto (README, docs de API) | Isso mora no repositório; brain não substitui docs formais |
-| Sistema de tickets/tasks (Linear/Jira) | Brain não gerencia trabalho pendente, só conhecimento consolidado |
-| Memória de conversação / resumos de sessão | Brain é para padrões acionáveis, não para recordação de chats |
-| Base de conhecimento genérica (Notion/Obsidian) | Foco estrito em código/desenvolvimento |
-| Sync em cloud no v1 | Schema preparado, mas implementação fica para v2 |
-| Multi-usuário / compartilhamento de time no v1 | Escopo v1 é estritamente pessoal |
-| Integração com GSD | Brain é cross-tool; GSD é workflow de projeto |
-| Cloud embeddings no v1 | Local-first é decisão; cloud vira opção futura |
-| Interface web/GUI no v1 | v1 é MCP + CLI; UI é pós-v1 |
-| TTL/expiração automática de conhecimento | Regras pessoais não expiram; expiração baseada em tempo é anti-padrão para este uso |
-| Auto-capture ligado por padrão | Quality gates precisam amadurecer; começa opt-in |
+| Project documentation (README, API docs) | That lives in the repository; brain does not replace formal docs |
+| Ticket/task system (Linear/Jira) | Brain does not manage pending work, only consolidated knowledge |
+| Conversation memory / session summaries | Brain is for actionable patterns, not chat recall |
+| Generic knowledge base (Notion/Obsidian) | Strictly focused on code/development |
+| Cloud sync in v1 | Schema is prepared, but implementation is deferred to v2 |
+| Multi-user / team sharing in v1 | v1 scope is strictly personal |
+| GSD integration | Brain is cross-tool; GSD is a per-project workflow |
+| Cloud embeddings in v1 | Local-first is a deliberate decision; cloud becomes a future option |
+| Web interface / GUI in v1 | v1 is MCP + CLI; UI is post-v1 |
+| TTL/automatic knowledge expiration | Personal rules do not expire; time-based expiration is an anti-pattern for this use case |
+| Auto-capture on by default | Quality gates need to mature; starts opt-in |
 
 ## Traceability
 
@@ -214,8 +214,6 @@ Exclusões explícitas. Documentadas para prevenir scope creep.
 | Phase 3 — Retrieval + Session Injection | RET-01..06, SESS-01..04 | 10 |
 | Phase 4 — Capture (Manual + Auto) | CAPT-01..03, AUTO-01..04 | 7 |
 | Phase 5 — Lifecycle, Packaging + Polish | LIFE-01..04, PKG-01..04 | 8 |
-
-**Note:** Header declared 48 requirements; actual count is 54 (verified by checkbox count 2026-04-14).
 
 ---
 *Requirements defined: 2026-04-14*
