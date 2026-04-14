@@ -23,8 +23,8 @@ dev = [
 ]
 
 [project.scripts]
-brain = "brain_mcp.cli:app"
-brain-mcp = "brain_mcp.cli:app"
+brain = "brain_mcp.cli:main"
+brain-mcp = "brain_mcp.cli:main"
 
 [build-system]
 requires = ["hatchling"]
