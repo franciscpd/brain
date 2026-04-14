@@ -12,6 +12,9 @@ from alembic.config import Config
 _PACKAGE_ROOT = Path(__file__).resolve().parents[3]
 _ALEMBIC_CFG_PATH = _PACKAGE_ROOT.parent / "alembic.ini"
 
+# Public alias used by tests and external tooling.
+ALEMBIC_CFG_PATH = _ALEMBIC_CFG_PATH
+
 
 def run_upgrade_head() -> None:
     """Equivalent to `alembic upgrade head`. Uses brain_mcp.db.connection under the hood."""
