@@ -45,6 +45,10 @@ python_version = "3.11"
 strict = true
 files = ["src/brain_mcp"]
 
+[[tool.mypy.overrides]]
+module = "sqlite_vec"
+ignore_missing_imports = true
+
 [tool.pytest.ini_options]
 addopts = "-m 'not slow' --strict-markers"
 testpaths = ["tests"]
