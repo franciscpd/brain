@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import logging
 import sqlite3
 import struct
 import uuid
@@ -12,16 +11,16 @@ import typer
 
 from brain_mcp.db.connection import connect
 from brain_mcp.db.migrations import run_upgrade_head
+from brain_mcp.db.schema import KnowledgeKind
 from brain_mcp.embedding.models import DEFAULT_MODEL, FULL_MODEL, FastEmbedEmbedder
 from brain_mcp.embedding.service import EmbeddingService
+from brain_mcp.errors import SchemaError
 from brain_mcp.paths import (
     brain_home,
     db_path,
     device_id_path,
     model_cache_dir,
 )
-
-log = logging.getLogger("brain_mcp.cli.init")
 
 
 def init_command(
@@ -33,7 +32,7 @@ def init_command(
     force: bool = typer.Option(
         False,
         "--force",
-        help="Re-run init even if brain is already initialized.",
+        help="Regenerate device_id even if one already exists (migrations and model load are always idempotent).",
     ),
 ) -> None:
     """Initialize brain: create database, run migrations, download embedding model."""
@@ -54,12 +53,8 @@ def init_command(
     typer.echo(f"  device_id: {device_id[:8]}...")
 
     typer.echo(f"  database:  {db}")
-    conn = connect(db)
-    try:
-        run_upgrade_head()
-        typer.echo("    schema applied (alembic head)")
-    finally:
-        conn.close()
+    run_upgrade_head()
+    typer.echo("    schema applied (alembic head)")
 
     spec = FULL_MODEL if full_model else DEFAULT_MODEL
     typer.echo(f"  model:     {spec.fastembed_id} ({spec.variant})")
@@ -85,8 +80,6 @@ def init_command(
 
 def _self_check(conn: sqlite3.Connection, embedding_service: EmbeddingService, device_id: str) -> None:
     """Insert a probe row end-to-end, then roll back so the DB stays empty."""
-    from brain_mcp.db.schema import KnowledgeKind
-
     probe_id = uuid.uuid4().hex
     now = datetime.now(tz=UTC).isoformat()
     text = "brain init self-check probe"
@@ -113,7 +106,7 @@ def _self_check(conn: sqlite3.Connection, embedding_service: EmbeddingService, d
             "SELECT title FROM knowledge_fts WHERE rowid = ?", (internal_rowid,)
         ).fetchone()
         if fts_row is None:
-            raise RuntimeError("FTS trigger did not populate knowledge_fts")
+            raise SchemaError("FTS trigger did not populate knowledge_fts")
 
         vector, model_id = embedding_service.embed_document(text, kind=KnowledgeKind.RULE)
         blob = struct.pack(f"{len(vector)}f", *vector)
