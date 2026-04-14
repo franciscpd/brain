@@ -88,6 +88,31 @@ def test_fts_trigger_clears_on_delete(db_conn) -> None:
     assert rows == []
 
 
+def test_fts_trigger_updates_on_update(db_conn) -> None:
+    item_id = _insert_rule(db_conn, title="original title", content="original body")
+    # FTS should have the original content indexed
+    assert db_conn.execute(
+        "SELECT COUNT(*) FROM knowledge_fts WHERE knowledge_fts MATCH 'original'"
+    ).fetchone()[0] >= 1
+
+    # Update the row
+    with transaction(db_conn):
+        db_conn.execute(
+            "UPDATE knowledge_items SET title = 'updated title', content = 'new body' WHERE id = ?",
+            (item_id,),
+        )
+
+    # Old content should be purged from FTS
+    assert db_conn.execute(
+        "SELECT COUNT(*) FROM knowledge_fts WHERE knowledge_fts MATCH 'original'"
+    ).fetchone()[0] == 0
+
+    # New content should be indexed
+    assert db_conn.execute(
+        "SELECT COUNT(*) FROM knowledge_fts WHERE knowledge_fts MATCH 'new'"
+    ).fetchone()[0] >= 1
+
+
 def test_vec0_accepts_768_dim_insert(db_conn) -> None:
     vector = [0.1] * 768
     blob = struct.pack(f"{len(vector)}f", *vector)

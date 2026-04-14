@@ -19,9 +19,8 @@ from brain_mcp.paths import db_path as resolve_db_path
 config = context.config
 
 
-def _make_engine() -> Engine:
+def _make_engine(conn_holder: dict[str, sqlite3.Connection]) -> Engine:
     db = resolve_db_path()
-    conn_holder: dict[str, sqlite3.Connection] = {}
 
     def creator() -> sqlite3.Connection:
         # Called by SQLAlchemy's connection pool. Return a fresh configured conn.
@@ -47,14 +46,20 @@ def run_migrations_offline() -> None:
 
 def run_migrations_online() -> None:
     """Online mode — real database connection via brain_mcp.db.connect()."""
-    engine = _make_engine()
-    with engine.connect() as connection:
-        context.configure(
-            connection=connection,
-            render_as_batch=True,  # SQLite ALTER limitations
-        )
-        with context.begin_transaction():
-            context.run_migrations()
+    conn_holder: dict[str, sqlite3.Connection] = {}
+    engine = _make_engine(conn_holder)
+    try:
+        with engine.connect() as connection:
+            context.configure(
+                connection=connection,
+                render_as_batch=True,  # SQLite ALTER limitations
+            )
+            with context.begin_transaction():
+                context.run_migrations()
+    finally:
+        cached = conn_holder.get("conn")
+        if cached is not None:
+            cached.close()
 
 
 if context.is_offline_mode():
