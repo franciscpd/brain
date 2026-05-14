@@ -16,3 +16,6 @@ build/
 *.db
 *.db-wal
 *.db-shm
+
+# Local session memory
+.remember/
